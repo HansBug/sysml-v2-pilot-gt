@@ -13,7 +13,7 @@ The parser itself is the official Xtext/EMF Pilot parser. This project does not 
 ## Build
 
 ```bash
-git clone https://github.com/<owner>/sysml-v2-pilot-groundtruth.git
+git clone https://github.com/HansBug/sysml-v2-pilot-groundtruth.git
 cd sysml-v2-pilot-groundtruth
 git submodule update --init --recursive
 make build
