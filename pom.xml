@@ -5,10 +5,34 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.github.hansbug</groupId>
-  <artifactId>sysml-v2-pilot-groundtruth</artifactId>
+  <artifactId>sysml-v2-pilot-gt</artifactId>
   <version>${revision}</version>
   <name>SysML v2 Pilot Ground Truth</name>
   <description>Small CLI and Java API around the official SysML v2 Pilot parser.</description>
+  <url>https://github.com/HansBug/sysml-v2-pilot-gt</url>
+
+  <licenses>
+    <license>
+      <name>Eclipse Public License 2.0</name>
+      <url>https://www.eclipse.org/legal/epl-2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:https://github.com/HansBug/sysml-v2-pilot-gt.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/HansBug/sysml-v2-pilot-gt.git</developerConnection>
+    <url>https://github.com/HansBug/sysml-v2-pilot-gt</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/HansBug/sysml-v2-pilot-gt</url>
+    </repository>
+  </distributionManagement>
 
   <properties>
     <revision>0.1.0-SNAPSHOT</revision>
@@ -21,11 +45,11 @@
   </properties>
 
   <dependencies>
-    <!-- Installed locally by build.sh from the exact pinned Pilot commit. -->
+    <!-- Built from the exact pinned Pilot commit by build.sh and published alongside this artifact. -->
     <dependency>
       <groupId>org.omg.sysml</groupId>
       <artifactId>official-pilot-runtime</artifactId>
-      <version>local</version>
+      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>info.picocli</groupId>
@@ -101,6 +125,39 @@
                 </transformer>
               </transformers>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>package</phase>
+            <goals><goal>jar-no-fork</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals><goal>flatten</goal></goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals><goal>clean</goal></goals>
           </execution>
         </executions>
       </plugin>

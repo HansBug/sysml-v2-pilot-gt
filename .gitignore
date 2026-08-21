@@ -86,3 +86,6 @@ lost+found/
 !.env.example
 .direnv/
 .tool-versions
+
+# Docker
+.docker/

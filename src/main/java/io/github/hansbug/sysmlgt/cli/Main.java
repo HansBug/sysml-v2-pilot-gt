@@ -55,9 +55,17 @@ public final class Main implements Callable<Integer> {
                 description = "Official grammar node (default: ${DEFAULT-VALUE})") String node;
         @Option(names = {"--format"}, defaultValue = "pretty",
                 description = "Output: pretty, json, semantic-json (default: ${DEFAULT-VALUE})") String format;
+        @Option(names = "--tree", defaultValue = "minimal",
+                description = "NodeModel tree: minimal or full (default: ${DEFAULT-VALUE})") String tree;
 
         @Override public Integer call() throws Exception {
             String source = readSource();
+            NodeTree.Mode treeMode;
+            try {
+                treeMode = NodeTree.Mode.parse(tree);
+            } catch (IllegalArgumentException error) {
+                throw new CommandLine.ParameterException(new CommandLine(this), error.getMessage());
+            }
             PilotParser parser = PilotParser.create();
             PilotParser.ParseResult result;
             try {
@@ -71,14 +79,15 @@ public final class Main implements Callable<Integer> {
                 output.put("entryRule", result.entryRule());
                 output.put("ok", result.success());
                 output.put("diagnostics", result.diagnostics());
-                output.put("tree", NodeTree.from(result));
+                output.put("treeMode", treeMode.name().toLowerCase(java.util.Locale.ROOT));
+                output.put("tree", NodeTree.from(result, treeMode));
                 if ("semantic-json".equals(format)) {
                     output.put("semantic", io.github.hansbug.sysmlgt.api.SemanticTree.from(result));
                     output.put("semanticType", io.github.hansbug.sysmlgt.api.SemanticTree.typeName(result.semanticRoot()));
                 }
                 System.out.println(json(output));
             } else if ("pretty".equals(format)) {
-                printPretty(result);
+                printPretty(result, treeMode);
             } else {
                 throw new CommandLine.ParameterException(new CommandLine(this), "unknown format: " + format);
             }
@@ -125,9 +134,10 @@ public final class Main implements Callable<Integer> {
         return mapper.writeValueAsString(value);
     }
 
-    private static void printPretty(PilotParser.ParseResult result) {
-        System.out.printf("entry=%s ok=%s%n", result.entryRule(), result.success());
-        printNode(NodeTree.from(result), 0);
+    private static void printPretty(PilotParser.ParseResult result, NodeTree.Mode treeMode) {
+        System.out.printf("entry=%s ok=%s tree=%s%n", result.entryRule(), result.success(),
+                treeMode.name().toLowerCase(java.util.Locale.ROOT));
+        printNode(NodeTree.from(result, treeMode), 0);
         for (PilotParser.Diagnostic diagnostic : result.diagnostics()) {
             System.err.printf("error[%d:%d]: %s%n", diagnostic.offset(), diagnostic.endOffset(), diagnostic.message());
         }

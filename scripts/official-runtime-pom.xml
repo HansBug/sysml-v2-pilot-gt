@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.omg.sysml</groupId>
   <artifactId>official-pilot-runtime</artifactId>
-  <version>local</version>
+  <version>${revision}</version>
   <packaging>jar</packaging>
   <name>Official SysML v2 Pilot runtime bundle</name>
   <description>Locally installed fat jar built from the pinned Pilot submodule.</description>

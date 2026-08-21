@@ -13,8 +13,8 @@ The parser itself is the official Xtext/EMF Pilot parser. This project does not 
 ## Build
 
 ```bash
-git clone https://github.com/HansBug/sysml-v2-pilot-groundtruth.git
-cd sysml-v2-pilot-groundtruth
+git clone https://github.com/HansBug/sysml-v2-pilot-gt.git
+cd sysml-v2-pilot-gt
 git submodule update --init --recursive
 make build
 ```
@@ -22,7 +22,7 @@ make build
 The resulting executable is:
 
 ```text
-target/sysml-v2-pilot-groundtruth-0.1.0-SNAPSHOT-all.jar
+target/sysml-v2-pilot-gt-0.1.0-SNAPSHOT-all.jar
 ```
 
 The build first compiles the exact Pilot commit recorded by the submodule, explicitly builds the upstream model and logic prerequisites, installs the resulting runtime in the local Maven repository, and then compiles this thin wrapper. The two prerequisite builds are intentional: the upstream Tycho reactor does not propagate ordinary Maven JARs through `-am`. The official runtime is not silently fetched from an unrelated version.
@@ -43,11 +43,20 @@ Parse a complete document. The default entry is `rootNamespace`:
 echo 'package Demo { }' | java -jar target/*-all.jar parse --format json
 ```
 
-Parse a fragment using an official grammar node:
+Parse a fragment using an official grammar node. The default tree is the
+compact `minimal` projection:
 
 ```bash
 java -jar target/*-all.jar parse --node stateDefinition --text 'state def S;'
-java -jar target/*-all.jar parse --node ownedExpression --file expression.txt --format json
+java -jar target/*-all.jar parse --node ownedExpression --text '1 + 2 * 3' --format pretty
+```
+
+Use `--tree full` when the complete official Xtext NodeModel hierarchy is
+needed for exact structural inspection:
+
+```bash
+java -jar target/*-all.jar parse --node ownedExpression --text '1 + 2 * 3' --tree full --format json
+java -jar target/*-all.jar parse --node ownedExpression --file expression.txt --tree full --format semantic-json
 ```
 
 List available parser entries and their official model type:
@@ -59,8 +68,10 @@ java -jar target/*-all.jar list --format json
 
 Output formats are `pretty`, `json`, and `semantic-json`:
 
-- `pretty` prints an indented official Xtext NodeModel tree for humans.
-- `json` emits that same NodeModel tree as a stable, machine-friendly object with source offsets, hidden tokens, grammar elements, and diagnostics.
+- `minimal` (the default `--tree` mode) removes same-range wrapper chains while preserving every range-changing child, leaf, hidden token, offset, and grammar element. It is intended for humans and LLMs.
+- `full` preserves every official Xtext NodeModel composite and leaf node.
+- `pretty` prints the selected tree mode for humans.
+- `json` emits the selected NodeModel tree as a stable, machine-friendly object with `treeMode`, source offsets, hidden tokens, grammar elements, and diagnostics.
 - `semantic-json` includes the NodeModel plus a JSON projection of the official EMF semantic AST (`type`, attributes, containment children, and non-containment references). Entries that produce no EMF object have `semantic: null`.
 
 Syntax diagnostics go to stderr in pretty mode and are included in JSON output. All parse modes preserve the official parser's acceptance and recovery behavior; this wrapper does not add validation or linking.
@@ -81,6 +92,10 @@ PilotParser.ParseResult result = parser.parse("state def S;", "stateDefinition")
 NodeTree.TreeNode tree = NodeTree.from(result);
 System.out.println(tree);
 
+// The default is compact; request every official NodeModel layer when needed.
+NodeTree.TreeNode fullTree = NodeTree.fullFrom(result);
+var sameFullTree = NodeTree.from(result, NodeTree.Mode.FULL);
+
 // The original official Xtext/EMF objects remain available for exact GT use.
 var semantic = SemanticTree.from(result);
 var officialRoot = result.semanticRoot();
@@ -89,6 +104,62 @@ var officialRoot = result.semanticRoot();
 `ParseResult.officialResult()` exposes the original Xtext `IParseResult`; `rootNode()` exposes the official `ICompositeNode`; and `semanticRoot()` exposes the official EMF root when available.
 
 `PilotParser.create()` also installs the upstream `SysMLLogicStandaloneSetup`, which is required by the generated model for operator expressions and other derived features in a standalone JVM.
+
+## Maven Packages
+
+Each tagged release publishes both this wrapper and the matching
+`org.omg.sysml:official-pilot-runtime` built from the pinned submodule to
+GitHub Packages. Configure a GitHub Packages server with a token that has
+`read:packages`, then add the repository and dependency:
+
+The server id must be `github` (the release workflow uses the same id):
+
+```xml
+<server>
+  <id>github</id>
+  <username>YOUR_GITHUB_USERNAME</username>
+  <password>YOUR_GITHUB_TOKEN</password>
+</server>
+```
+
+Place that entry under `<servers>` in `~/.m2/settings.xml`, preferably using
+a token stored by your normal credential helper rather than committing it.
+
+```xml
+<repositories>
+  <repository>
+    <id>github</id>
+    <url>https://maven.pkg.github.com/HansBug/sysml-v2-pilot-gt</url>
+  </repository>
+</repositories>
+
+<dependency>
+  <groupId>io.github.hansbug</groupId>
+  <artifactId>sysml-v2-pilot-gt</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+The default Maven artifact is the Java API plus its matching official runtime
+dependency. The executable shaded artifact is also published with classifier
+`all`; use the standalone JAR or the CLI examples above when no Maven runtime
+is available. Maven publishing is wired into the tag-based GitHub Actions
+release workflow.
+
+## Docker / GHCR
+
+The image is based on Alpine Java 21 and contains only the executable shaded
+JAR. Build it locally after `make build`:
+
+```bash
+make docker-build
+printf 'package Demo { }\n' | docker run --rm -i \
+  ghcr.io/hansbug/sysml-v2-pilot-gt:local parse --format json
+```
+
+Tagged releases publish `ghcr.io/hansbug/sysml-v2-pilot-gt:<version>` and
+`ghcr.io/hansbug/sysml-v2-pilot-gt:latest`. The `docker-run` Make target also
+accepts an `ARGS` string for local image checks.
 
 ## Provenance
 

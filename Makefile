@@ -3,7 +3,7 @@
 MAVEN ?= ./mvnw
 VERSION ?= 0.1.0-SNAPSHOT
 
-.PHONY: help init build test verify jar clean release
+.PHONY: help init build test verify jar publish docker-build docker-run clean release
 
 help: ## Show available development commands
 	@printf '\033[1;36mSysML v2 Pilot Ground Truth\033[0m\n\n'
@@ -22,6 +22,15 @@ verify: ## Run tests and generate the JaCoCo coverage report
 	./build.sh "$(VERSION)"
 
 jar: build ## Alias for build
+
+publish: build ## Publish matching runtime and wrapper packages to Maven
+	./scripts/publish-maven.sh "$(VERSION)"
+
+docker-build: build ## Build a local Alpine Java 21 container image
+	docker build --build-arg VERSION="$(VERSION)" -t "$${IMAGE:-ghcr.io/hansbug/sysml-v2-pilot-gt:local}" .
+
+docker-run: ## Run the container, forwarding stdin and CLI arguments
+	docker run --rm -i "$${IMAGE:-ghcr.io/hansbug/sysml-v2-pilot-gt:local}" $(ARGS)
 
 clean: ## Remove Maven build output
 	$(MAVEN) clean
