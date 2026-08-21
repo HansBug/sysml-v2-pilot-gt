@@ -146,6 +146,21 @@ dependency. The executable shaded artifact is also published with classifier
 is available. Maven publishing is wired into the tag-based GitHub Actions
 release workflow.
 
+## Releases and CI
+
+Push a version tag to build the pinned Pilot, upload the executable shaded JAR
+to a GitHub Release, and publish the matching Maven and GHCR packages:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The `Test` workflow runs the wrapper unit tests and stores the Surefire and
+JaCoCo reports as workflow artifacts on every push and pull request. The
+coverage report is generated at `target/site/jacoco/index.html` by either
+`make verify` or `./build.sh`.
+
 ## Docker / GHCR
 
 The image is based on Alpine Java 21 and contains only the executable shaded

@@ -20,6 +20,8 @@ jobs:
           java-version: '21'
           cache: maven
       - run: ./build.sh
+      - name: Confirm JaCoCo report
+        run: test -s target/site/jacoco/index.html
       - name: Publish test and coverage reports
         if: always()
         uses: actions/upload-artifact@v4
