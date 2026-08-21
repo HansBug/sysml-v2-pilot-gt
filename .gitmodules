@@ -1,0 +1,3 @@
+[submodule "upstream/SysML-v2-Pilot-Implementation"]
+	path = upstream/SysML-v2-Pilot-Implementation
+	url = https://github.com/Systems-Modeling/SysML-v2-Pilot-Implementation.git

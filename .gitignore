@@ -1,0 +1,88 @@
+# Java, Maven, and Gradle
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+replay_pid*
+.gradle/
+.mvn/timing.properties
+.flattened-pom.xml
+dependency-reduced-pom.xml
+pom.xml.versionsBackup
+pom.xml.releaseBackup
+pom.xml.next
+pom.xml.tag
+release.properties
+*.lastUpdated
+upstream/**/target/
+upstream/**/.factorypath
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.ijwb/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+bin/
+*.factorypath
+*.launch
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Other editors
+*.swp
+*.swo
+*~
+.fleet/
+.vscode-test/
+.sass-cache/
+.sublime-workspace
+.sublime-project
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Operating systems
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100/
+.Trashes/
+.Trash-*/
+.directory
+.DocumentRevisions-V100/
+.TemporaryItems/
+.com.apple.timemachine.donotpresent
+lost+found/
+
+# Local environment and tooling
+.env
+.env.*
+!.env.example
+.direnv/
+.tool-versions
